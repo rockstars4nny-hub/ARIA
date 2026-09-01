@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ARIA · Glass / Camera</title>
+<link rel="stylesheet" href="/static/css/aria.css"/>
+</head>
+<body>
+<div class="app" id="app">
+  <main class="stage">
+    <header class="stage-head">
+      <div>
+        <h1>Glass / Camera</h1>
+        <p>IP/CIDR fabric — geo vs LAN schematic, org, exposure notes for camera recon.</p>
+      </div>
+      <div class="stage-actions">
+        <button class="btn primary" data-quick-eng>Quick start</button>
+        <button class="btn" data-open-eng>Custom</button>
+      </div>
+    </header>
+    <div class="stage-body">
+      <div class="domain-grid">
+        <section class="panel">
+          <h2>Run</h2>
+          <div class="field">
+            <label>IP or CIDR</label>
+            <input id="q" type="text" placeholder="1.2.3.4 or 192.168.1.0/24"/>
+          </div>
+          <button class="btn primary" id="btnRun">Run Glass</button>
+          <p class="muted" style="margin-top:1rem;font-size:13px;line-height:1.5" id="activeLabel">Checking engagement…</p>
+        </section>
+        <section class="panel domain-results">
+          <h2>Fabric report</h2>
+          <div id="out" class="muted">Returns: routable vs schematic, org/ASN, exposure checklist.</div>
+        </section>
+      </div>
+      <section class="panel" id="history"></section>
+    </div>
+  </main>
+</div>
+<script src="/static/js/shell.js"></script>
+<script src="/static/js/gps.js"></script>
+<script src="/static/js/results.js"></script>
+<script src="/static/js/domain.js"></script>
+<script>ARIADomain.boot("glass", { nav: "glass" });</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ARIA · RF / Root</title>
+<link rel="stylesheet" href="/static/css/aria.css"/>
+</head>
+<body>
+<div class="app" id="app">
+  <main class="stage">
+    <header class="stage-head">
+      <div>
+        <h1>RF / Root kit</h1>
+        <p>Live device roster from the ESP — bands, RSSI, scanner GPS. Radar is optional depth.</p>
+      </div>
+      <div class="stage-actions">
+        <button class="btn" data-gps-locate data-gps-root>Laptop GPS → Root</button>
+        <a class="btn" href="/radar">Radar</a>
+        <button class="btn primary" data-quick-eng>Quick start</button>
+      </div>
+    </header>
+    <div class="stage-body">
+      <div class="domain-grid">
+        <section class="panel">
+          <h2>Pull kit</h2>
+          <div class="field">
+            <label>Root base URL</label>
+            <input id="q" value="http://192.168.4.1"/>
+          </div>
+          <button class="btn primary" id="btnRun">Pull devices</button>
+          <button class="btn" id="btnPing" style="margin-left:.35rem">Ping</button>
+          <p class="muted" style="margin-top:1rem;font-size:13px;line-height:1.5">Join Wi‑Fi <span class="mono">root</span> / <span class="mono">root-radar</span></p>
+          <p class="muted" style="margin-top:.5rem;font-size:13px" id="activeLabel">Checking engagement…</p>
+        </section>
+        <section class="panel domain-results">
+          <h2>RF roster</h2>
+          <div id="out" class="muted">Returns: device cards, bands, scanner GPS — stays on this page.</div>
+        </section>
+      </div>
+      <section class="panel" id="history"></section>
+    </div>
+  </main>
+</div>
+<script src="/static/js/shell.js"></script>
+<script src="/static/js/gps.js"></script>
+<script src="/static/js/results.js"></script>
+<script src="/static/js/domain.js"></script>
+<script>
+ARIADomain.boot("rf", { nav: "rf" });
+document.getElementById("btnPing").onclick = async () => {
+  const base = document.getElementById("q").value.trim();
+  try {
+    const r = await ARIA.api("/api/root/ping?base=" + encodeURIComponent(base));
+    ARIA.toast(r.ok ? "Root reachable" : (r.error || "Unreachable"), !r.ok);
+  } catch (e) { ARIA.toast(String(e.message||e), true); }
+};
+</script>
+</body>
+</html>

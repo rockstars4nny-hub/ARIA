@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ARIA · Kit Dashboard</title>
+<link rel="stylesheet" href="/static/css/aria.css"/>
+</head>
+<body data-gps-watch>
+<div class="app kit-app" id="app">
+  <aside class="nav kit-nav">
+    <div class="nav-brand">
+      <div class="nav-mark">AR</div>
+      <div>
+        <div class="nav-title">ARIA Kit</div>
+        <div class="nav-sub">One dashboard</div>
+      </div>
+    </div>
+    <div class="kit-stats" id="kitStats"></div>
+    <nav class="kit-tab-nav">
+      <button type="button" class="kit-tab active" data-kit-tab="root"><span class="ico">◈</span> Root</button>
+      <button type="button" class="kit-tab" data-kit-tab="radar"><span class="ico">◉</span> Stem · Radar</button>
+      <button type="button" class="kit-tab" data-kit-tab="run"><span class="ico">⚡</span> Run</button>
+      <button type="button" class="kit-tab" data-kit-tab="engagements"><span class="ico">▣</span> Engagements</button>
+    </nav>
+    <div class="kit-skill-nav" id="runSkillBar">
+      <div class="nav-section">Skills</div>
+      <button type="button" class="kit-skill" data-kit-skill="seed">Seed</button>
+      <button type="button" class="kit-skill" data-kit-skill="osint">OSINT</button>
+      <button type="button" class="kit-skill" data-kit-skill="glass">Glass</button>
+      <button type="button" class="kit-skill" data-kit-skill="web3">Web3</button>
+      <button type="button" class="kit-skill" data-kit-skill="rf">RF / Root</button>
+    </div>
+    <div class="nav-foot">Root → Stem<br/>Join <span class="mono">root</span> / <span class="mono">root-radar</span></div>
+  </aside>
+
+  <main class="stage kit-stage">
+    <header class="stage-head kit-head">
+      <div>
+        <h1 id="kitTitle">Root</h1>
+        <p id="kitSub">ESP32 kit dashboard — live sniff on 192.168.4.1</p>
+      </div>
+      <div class="stage-actions">
+        <button class="btn primary" data-quick-eng>Quick start</button>
+        <button class="btn" data-gps-locate>Laptop GPS</button>
+        <button class="btn" data-gps-apply-eng>GPS → engagement</button>
+        <button class="btn" data-open-eng>Custom</button>
+      </div>
+    </header>
+
+    <div class="kit-panels">
+
+      <!-- ROOT -->
+      <section class="kit-panel active" id="panel-root">
+        <div class="kit-root-bar">
+          <span class="kit-status pending" id="rootStatus">checking…</span>
+          <div class="field" style="margin:0;flex:1;max-width:280px">
+            <input id="rootBaseKit" value="http://192.168.4.1"/>
+          </div>
+          <button class="btn" id="btnRootPing">Ping</button>
+          <button class="btn primary" id="btnRootPullKit">Pull devices</button>
+          <button class="btn" id="btnRootOpen">Open tab</button>
+          <button class="btn" id="rootFrameReload">Reload frame</button>
+        </div>
+        <div class="kit-root-frame-wrap">
+          <iframe id="rootFrame" class="kit-root-frame" src="http://192.168.4.1" title="Root kit dashboard"></iframe>
+          <div class="kit-root-fallback muted">
+            <p><strong>Can't see Root?</strong> Join Wi‑Fi <span class="mono">root</span> / <span class="mono">root-radar</span>, then Reload frame or Open tab.</p>
+            <p>Windows may show “no internet” — open <span class="mono">http://192.168.4.1</span> directly.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- RADAR -->
+      <section class="kit-panel" id="panel-radar">
+        <div class="kit-panel-actions">
+          <button class="btn" data-gps-locate data-gps-root>Laptop GPS → Root</button>
+          <button class="btn" id="btnPause">Pause</button>
+          <button class="btn primary" id="btnRootPull">Pull Root</button>
+        </div>
+        <div class="stage-body fill kit-fill">
+          <div class="radar-host">
+            <div class="radar-stage" id="radarStage">
+              <div class="radar-paused" id="radarPaused">PAUSED</div>
+              <div class="radar-legend">
+                <div><i style="background:#2ee6a8"></i>close</div>
+                <div><i style="background:#fb923c"></i>mid</div>
+                <div><i style="background:#6b8f7a"></i>far</div>
+                <div><i style="background:#e2c07a"></i>eng pin</div>
+              </div>
+              <canvas id="radar"></canvas>
+              <div class="radar-disclaimer"><b>Real (Root):</b> RSSI / distance estimate. <b>Not measured:</b> bearing.</div>
+              <div class="radar-tip" id="radarTip"></div>
+            </div>
+          </div>
+          <aside class="side">
+            <div class="search-wrap"><input class="search" id="search" type="search" placeholder="Search MAC, SSID, band…"/></div>
+            <div class="chips" id="filters">
+              <span class="chip" data-f="root">Root</span>
+              <span class="chip" data-f="pin">Pins</span>
+              <span class="chip" data-f="wifi">Wi‑Fi</span>
+              <span class="chip" data-f="Near">Close</span>
+              <span class="chip" data-f="Far">Far</span>
+              <span class="chip" data-f="fresh">Recent</span>
+              <span class="chip" data-f="clear">Clear</span>
+            </div>
+            <div class="field" style="margin-top:.5rem">
+              <label>Root kit URL</label>
+              <input id="rootBase" value="http://192.168.4.1"/>
+            </div>
+            <div class="muted mono" id="listHead" style="font-size:11px;margin:.5rem 0">listening</div>
+            <div id="empty" class="muted" style="font-size:13px;padding:.5rem 0">Pull Root or run skills.</div>
+            <div class="dev-cards" id="devCards"></div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- RUN -->
+      <section class="kit-panel" id="panel-run">
+        <div class="stage-body">
+          <div class="domain-grid">
+            <section class="panel">
+              <h2>Query</h2>
+              <div class="field">
+                <label id="runSkillLabel">Seed query</label>
+                <input id="runQuery" type="text" placeholder="name · @handle · email · domain · IP"/>
+              </div>
+              <button class="btn primary" id="btnRunSkill">Run Seed</button>
+              <button class="btn" id="btnRunPing" style="margin-left:.35rem;display:none">Ping Root</button>
+              <p class="muted" style="margin-top:1rem;font-size:13px;line-height:1.5" id="runLabel">Checking engagement…</p>
+            </section>
+            <section class="panel domain-results">
+              <h2 id="runPanelTitle">Identity package</h2>
+              <div id="runOut" class="muted">Domain report renders here — same output as standalone pages.</div>
+            </section>
+          </div>
+          <section class="panel" id="runHistory"></section>
+        </div>
+      </section>
+
+      <!-- ENGAGEMENTS -->
+      <section class="kit-panel" id="panel-engagements">
+        <div class="kit-panel-actions">
+          <button class="btn" id="btnEngRefresh">Refresh</button>
+          <button class="btn danger" id="btnDeleteAllEng">Delete all</button>
+        </div>
+        <div class="stage-body">
+          <div class="grid-stats" id="engStats"></div>
+          <div class="search-wrap" style="max-width:420px;margin-bottom:1rem">
+            <input class="search" id="engSearch" type="search" placeholder="Search title, ROE, id…"/>
+          </div>
+          <div class="card-grid" id="engGrid"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+<script src="/static/js/shell.js"></script>
+<script src="/static/js/gps.js"></script>
+<script src="/static/js/radar.js"></script>
+<script src="/static/js/results.js"></script>
+<script src="/static/js/domain.js"></script>
+<script src="/static/js/kit.js"></script>
+<script>
+ARIAKit.boot();
+document.getElementById("btnRunPing").onclick = async () => {
+  const base = document.getElementById("runQuery").value.trim() || "http://192.168.4.1";
+  try {
+    const r = await ARIA.api("/api/root/ping?base=" + encodeURIComponent(base));
+    ARIA.toast(r.ok ? "Root reachable" : (r.error || "Unreachable"), !r.ok);
+  } catch (e) { ARIA.toast(String(e.message||e), true); }
+};
+document.querySelectorAll("[data-kit-skill]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.getElementById("btnRunPing").style.display = btn.dataset.kitSkill === "rf" ? "inline-flex" : "none";
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ARIA · Radar</title>
+<link rel="stylesheet" href="/static/css/aria.css"/>
+</head>
+<body data-gps-watch data-gps-root>
+<div class="app" id="app">
+  <main class="stage">
+    <header class="stage-head">
+      <div>
+        <h1>Radar</h1>
+        <p>Root signal-range map — sweep, rings, blips. Merge live kit + engagement pins. Direction is layout-only.</p>
+      </div>
+      <div class="stage-actions">
+        <button class="btn" data-gps-locate data-gps-root>Laptop GPS → Root</button>
+        <button class="btn" id="btnPause">Pause</button>
+        <button class="btn primary" id="btnRootPull">Pull Root</button>
+      </div>
+    </header>
+    <div class="stage-body fill">
+      <div class="radar-host">
+        <div class="radar-stage" id="radarStage">
+          <div class="radar-paused" id="radarPaused">PAUSED</div>
+          <div class="radar-legend">
+            <div><i style="background:#2ee6a8"></i>close</div>
+            <div><i style="background:#fb923c"></i>mid</div>
+            <div><i style="background:#6b8f7a"></i>far</div>
+            <div><i style="background:#e2c07a"></i>eng pin</div>
+          </div>
+          <canvas id="radar"></canvas>
+          <div class="radar-disclaimer"><b>Real (Root):</b> RSSI / distance estimate. <b>Not measured:</b> bearing — blips spread for readability.</div>
+          <div class="radar-tip" id="radarTip"></div>
+        </div>
+      </div>
+      <aside class="side">
+        <div class="search-wrap"><input class="search" id="search" type="search" placeholder="Search MAC, SSID, band, pin…"/></div>
+        <div class="chips" id="filters">
+          <span class="chip" data-f="root">Root</span>
+          <span class="chip" data-f="pin">Pins</span>
+          <span class="chip" data-f="wifi">Wi‑Fi</span>
+          <span class="chip" data-f="Near">Close</span>
+          <span class="chip" data-f="Far">Far</span>
+          <span class="chip" data-f="fresh">Recent</span>
+          <span class="chip" data-f="clear">Clear</span>
+        </div>
+        <div class="field" style="margin-top:.5rem">
+          <label>Root kit URL</label>
+          <input id="rootBase" value="http://192.168.4.1"/>
+        </div>
+        <div class="muted mono" id="listHead" style="font-size:11px;margin:.5rem 0">listening</div>
+        <div id="empty" class="muted" style="font-size:13px;padding:.5rem 0">Pull Root or run domain skills.</div>
+        <div class="dev-cards" id="devCards"></div>
+      </aside>
+    </div>
+  </main>
+</div>
+<script src="/static/js/shell.js"></script>
+<script src="/static/js/gps.js"></script>
+<script src="/static/js/radar.js"></script>
+<script>
+ARIA.mountShell("radar");
+ARIA.ensureModal();
+let rootDevices = [];
+let engagement = null;
+
+ARIARadar.init({});
+document.getElementById("btnPause").onclick = () => ARIARadar.togglePause();
+
+ARIAGPS.bind({
+  pushRoot: true,
+  rootBase: () => document.getElementById("rootBase").value,
+});
+setInterval(() => {
+  const base = document.getElementById("rootBase").value.trim();
+  const fix = ARIAGPS.last();
+  if (fix && document.body.dataset.gpsRoot !== undefined) {
+    ARIAGPS.pushToRoot(fix, base).catch(() => {});
+  }
+}, 20000);
+
+async function sync() {
+  engagement = await ARIA.loadActive();
+  const pins = engagement
+    ? ARIARadar.pinsToDevices(engagement.pins || [], engagement.declared_locus)
+    : [];
+  ARIARadar.merge(rootDevices, pins);
+}
+
+document.getElementById("btnRootPull").onclick = async () => {
+  const base = document.getElementById("rootBase").value.trim();
+  try {
+    const data = await ARIA.api("/api/root/devices?base=" + encodeURIComponent(base));
+    rootDevices = ARIARadar.rootToDevices(data);
+    await sync();
+    ARIA.toast("Root: " + rootDevices.length + " device(s)");
+  } catch (e) {
+    ARIA.toast(String(e.message || e), true);
+  }
+};
+
+sync();
+setTimeout(() => ARIARadar.fit(), 100);
+setTimeout(() => ARIARadar.fit(), 400);
+</script>
+</body>
+</html>

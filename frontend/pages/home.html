@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ARIA · Command</title>
+<link rel="stylesheet" href="/static/css/aria.css"/>
+</head>
+<body>
+<div class="app" id="app">
+  <main class="stage">
+    <header class="stage-head">
+      <div>
+        <h1>Command</h1>
+        <p>Advanced Recon Intelligence Agent — globe proof, Root radar, domain pages. Laptop GPS for declared locus.</p>
+      </div>
+      <div class="stage-actions">
+        <button class="btn primary" data-quick-eng>Quick start</button>
+        <button class="btn" data-gps-locate>Laptop GPS</button>
+        <button class="btn" data-open-eng>Custom</button>
+        <a class="btn" href="/engagements">Dashboard</a>
+      </div>
+    </header>
+    <div class="stage-body">
+      <div class="grid-stats" id="stats"></div>
+      <div class="hero-grid">
+        <section class="hero">
+          <h2>Put the Earth under the engagement.</h2>
+          <p>Declare where you’re working. Run domain recon. Export a spatial audit. MapLibre + OpenFreeMap — sharp vector tiles, no API key tax.</p>
+          <div class="cta">
+            <a class="btn primary" href="/globe">Open globe</a>
+            <a class="btn" href="/radar">Open radar</a>
+          </div>
+        </section>
+        <section class="panel">
+          <h2>Domains</h2>
+          <a class="domain-link" href="/domains/seed"><div><strong>Seed / Identity</strong><span>Names, handles, email</span></div><span>→</span></a>
+          <a class="domain-link" href="/domains/osint"><div><strong>OSINT</strong><span>Domains, infra, DNS → geo</span></div><span>→</span></a>
+          <a class="domain-link" href="/domains/glass"><div><strong>Glass / Camera</strong><span>IP · CIDR · fabric</span></div><span>→</span></a>
+          <a class="domain-link" href="/domains/web3"><div><strong>Web3 / Chain</strong><span>0x · honest locus pins</span></div><span>→</span></a>
+          <a class="domain-link" href="/domains/rf"><div><strong>RF / Root</strong><span>Kit pull · radar merge</span></div><span>→</span></a>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/static/js/shell.js"></script>
+<script src="/static/js/gps.js"></script>
+<script>
+ARIA.mountShell("home");
+ARIA.ensureModal();
+ARIAGPS.bind({});
+ARIA.api("/api/dashboard").then((d) => {
+  const s = d.stats || {};
+  document.getElementById("stats").innerHTML = [
+    ["Engagements", s.total],
+    ["Pins", s.pins],
+    ["Findings", s.findings],
+    ["Actions", s.actions],
+  ].map(([k,v]) => `<div class="stat"><b>${v||0}</b><span>${k}</span></div>`).join("");
+}).catch(() => {});
+</script>
+</body>
+</html>

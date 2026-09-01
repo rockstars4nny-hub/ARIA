@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ARIA · Engagements</title>
+<link rel="stylesheet" href="/static/css/aria.css"/>
+</head>
+<body>
+<div class="app" id="app">
+  <main class="stage">
+    <header class="stage-head">
+      <div>
+        <h1>Engagements</h1>
+        <p>Real jobs with spatial proof — declared locus, pins, findings, exportable audit.</p>
+      </div>
+      <div class="stage-actions">
+        <button class="btn primary" data-quick-eng>Quick start</button>
+        <button class="btn" data-open-eng>Custom</button>
+        <button class="btn" id="btnRefresh">Refresh</button>
+      </div>
+    </header>
+    <div class="stage-body">
+      <div class="grid-stats" id="stats"></div>
+      <div class="search-wrap" style="max-width:420px;margin-bottom:1rem">
+        <input class="search" id="engSearch" type="search" placeholder="Search title, ROE, id…"/>
+      </div>
+      <div class="card-grid" id="grid"></div>
+    </div>
+  </main>
+</div>
+<script src="/static/js/shell.js"></script>
+<script src="/static/js/gps.js"></script>
+<script>
+ARIA.mountShell("engagements");
+ARIA.ensureModal();
+ARIAGPS.bind({});
+
+async function load() {
+  const dash = await ARIA.api("/api/dashboard");
+  const s = dash.stats || {};
+  document.getElementById("stats").innerHTML = [
+    ["Engagements", s.total], ["Pins", s.pins], ["Findings", s.findings], ["Actions", s.actions],
+  ].map(([k,v]) => `<div class="stat"><b>${v||0}</b><span>${k}</span></div>`).join("");
+
+  const q = (document.getElementById("engSearch").value || "").trim().toLowerCase();
+  let rows = dash.engagements || [];
+  if (q) rows = rows.filter(e => [e.title,e.id,e.roe,e.declared_locus&&e.declared_locus.label].join(" ").toLowerCase().includes(q));
+  const active = ARIA.getActiveId();
+  const grid = document.getElementById("grid");
+  if (!rows.length) {
+    grid.innerHTML = '<p class="muted">No engagements yet.</p>';
+    return;
+  }
+  grid.innerHTML = rows.map(e => {
+    const loc = e.declared_locus || {};
+    const on = e.id === active ? " active" : "";
+    return `<div class="card${on}" data-id="${ARIA.esc(e.id)}">
+      <h3>${ARIA.esc(e.title)}</h3>
+      <div class="eid">${ARIA.esc(e.id)}</div>
+      <div class="meta">${(e.pins||[]).length} pins · ${(e.findings||[]).length} findings · ${(e.actions||[]).length} actions<br/>${ARIA.esc(e.roe||"No ROE")}</div>
+      <div class="mono" style="margin-top:.65rem;font-size:11px;color:var(--accent)">${ARIA.esc(loc.label||"")} · ${loc.lat}, ${loc.lng}</div>
+    </div>`;
+  }).join("");
+  grid.querySelectorAll(".card").forEach(card => {
+    card.onclick = () => {
+      ARIA.setActiveId(card.dataset.id);
+      location.href = "/globe";
+    };
+  });
+}
+document.getElementById("btnRefresh").onclick = load;
+document.getElementById("engSearch").oninput = () => load();
+window.onEngagementCreated = () => load();
+load().catch(e => ARIA.toast(String(e.message||e), true));
+</script>
+</body>
+</html>

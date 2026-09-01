@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ARIA · Globe</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/aria.css"/>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+</head>
+<body data-gps-watch>
+<div class="app" id="app">
+  <main class="stage">
+    <header class="stage-head">
+      <div>
+        <h1>Globe</h1>
+        <p>Engagement geospatial proof — declared vs observed. OpenFreeMap vectors, no Cesium Ion.</p>
+      </div>
+      <div class="stage-actions">
+        <button class="btn primary" data-quick-eng>Quick start</button>
+        <button class="btn" data-gps-locate id="btnGps">Laptop GPS</button>
+        <button class="btn" data-gps-apply-eng id="btnGpsEng">GPS → engagement</button>
+        <button class="btn" data-open-eng>Custom</button>
+        <button class="btn" id="btnFly" disabled>Fly to declared</button>
+        <button class="btn" id="btnExport" disabled>Export audit</button>
+      </div>
+    </header>
+    <div class="stage-body fill">
+      <div class="map-host" id="map"></div>
+      <aside class="side">
+        <div class="panel" style="box-shadow:none;background:transparent;border:0;padding:0">
+          <h2>Active engagement</h2>
+          <div id="active" class="muted">Loading…</div>
+          <div id="findings" style="margin-top:1rem"></div>
+          <h2 style="margin-top:1.25rem">Selected</h2>
+          <div id="selected" class="muted">Click a pin</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+<script src="/static/js/shell.js"></script>
+<script src="/static/js/gps.js"></script>
+<script src="/static/js/map.js"></script>
+<script>
+ARIA.mountShell("globe");
+ARIA.ensureModal();
+let engagement = null;
+let youMarker = null;
+
+function render() {
+  const a = document.getElementById("active");
+  const f = document.getElementById("findings");
+  if (!engagement) {
+    a.innerHTML = '<p class="muted">No engagement. Start one to pin work.</p>';
+    f.innerHTML = "";
+    document.getElementById("btnFly").disabled = true;
+    document.getElementById("btnExport").disabled = true;
+    return;
+  }
+  const d = engagement.declared_locus || {};
+  a.innerHTML = `<strong>${ARIA.esc(engagement.title)}</strong><div class="mono muted" style="font-size:11px;margin-top:4px">${ARIA.esc(engagement.id)}</div>
+    <div class="muted" style="margin-top:.5rem;font-size:13px">${ARIA.esc(engagement.roe||"No ROE")}</div>
+    <div style="margin-top:.75rem;font-size:13px">${(engagement.pins||[]).length} pins · ${(engagement.observed_loci||[]).length} observed · ${(engagement.actions||[]).length} actions</div>
+    <div class="mono" style="margin-top:.5rem;font-size:11px;color:var(--accent)">${ARIA.esc(d.label||"")} · ${d.lat}, ${d.lng}</div>`;
+  f.innerHTML = (engagement.findings||[]).slice().reverse().slice(0,12).map(x =>
+    `<div class="finding"><strong>${ARIA.esc(x.source)}</strong> ${ARIA.esc(x.summary)}</div>`
+  ).join("") || '<p class="muted">No findings yet — run a domain page.</p>';
+  document.getElementById("btnFly").disabled = false;
+  document.getElementById("btnExport").disabled = false;
+}
+
+function syncMap() {
+  ARIAMap.clearMarkers();
+  if (!engagement) return;
+  ARIAMap.setDeclared(engagement.declared_locus, showPin);
+  ARIAMap.setPins(engagement.pins || [], showPin);
+}
+
+function showPin(pin) {
+  document.getElementById("selected").innerHTML =
+    `<strong>${ARIA.esc(pin.label||pin.kind)}</strong>
+     <div class="muted" style="margin-top:4px">${ARIA.esc(pin.source)} · ${pin.lat}, ${pin.lng}</div>
+     <pre class="mono" style="margin-top:.6rem;font-size:10px;white-space:pre-wrap;color:var(--muted)">${ARIA.esc(JSON.stringify(pin.meta||{},null,2))}</pre>`;
+}
+
+function showYou(fix) {
+  if (!fix || !ARIAMap.getMap()) return;
+  const map = ARIAMap.getMap();
+  if (youMarker) youMarker.remove();
+  const el = document.createElement("div");
+  el.style.width = "14px";
+  el.style.height = "14px";
+  el.style.borderRadius = "50%";
+  el.style.background = "#2ee6a8";
+  el.style.border = "2px solid #fff";
+  el.style.boxShadow = "0 0 12px rgba(46,230,168,0.6)";
+  el.title = "You (laptop GPS)";
+  youMarker = new maplibregl.Marker({ element: el })
+    .setLngLat([fix.lng || fix.lon, fix.lat])
+    .addTo(map);
+}
+
+ARIAGPS.bind({
+  onLocated: (fix) => {
+    showYou(fix);
+    ARIAMap.flyTo(fix.lat, fix.lng || fix.lon, 12);
+  },
+  onEngagementLocus: (eng) => {
+    engagement = eng;
+    render();
+    syncMap();
+    ARIAMap.flyTo(eng.declared_locus.lat, eng.declared_locus.lng, 10);
+  },
+});
+
+async function boot() {
+  ARIAMap.init("map", {
+    onReady: async () => {
+      engagement = await ARIA.loadActive();
+      render();
+      syncMap();
+      const gps = await ARIAGPS.getBest();
+      if (gps && gps.valid) showYou(gps);
+      if (engagement && engagement.declared_locus) {
+        ARIAMap.flyTo(engagement.declared_locus.lat, engagement.declared_locus.lng, 9);
+      } else if (gps && gps.valid) {
+        ARIAMap.flyTo(gps.lat, gps.lng || gps.lon, 11);
+      }
+    },
+  });
+}
+
+document.getElementById("btnFly").onclick = () => {
+  if (engagement) ARIAMap.flyTo(engagement.declared_locus.lat, engagement.declared_locus.lng, 10);
+};
+document.getElementById("btnExport").onclick = async () => {
+  if (!engagement) return;
+  const pack = await ARIA.api("/api/engagements/" + engagement.id + "/export");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(pack,null,2)],{type:"application/json"}));
+  a.download = "ARIA_audit_" + engagement.id + ".json";
+  a.click();
+  ARIA.toast("Audit exported");
+};
+window.onEngagementCreated = (eng) => {
+  engagement = eng;
+  render();
+  syncMap();
+  ARIAMap.flyTo(eng.declared_locus.lat, eng.declared_locus.lng, 9);
+};
+boot();
+</script>
+</body>
+</html>

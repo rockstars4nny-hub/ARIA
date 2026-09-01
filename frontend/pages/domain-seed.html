@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ARIA · Seed / Identity</title>
+<link rel="stylesheet" href="/static/css/aria.css"/>
+</head>
+<body>
+<div class="app" id="app">
+  <main class="stage">
+    <header class="stage-head">
+      <div>
+        <h1>Seed / Identity</h1>
+        <p>Who is the subject — type detection, entity stub, pivots to other rails. Not just a globe pin.</p>
+      </div>
+      <div class="stage-actions">
+        <button class="btn primary" data-quick-eng>Quick start</button>
+        <button class="btn" data-gps-locate>Laptop GPS</button>
+        <button class="btn" data-open-eng>Custom</button>
+      </div>
+    </header>
+    <div class="stage-body">
+      <div class="domain-grid">
+        <section class="panel">
+          <h2>Run</h2>
+          <div class="field">
+            <label>Seed query</label>
+            <input id="q" type="text" placeholder="name · @handle · email · phone · domain · IP"/>
+          </div>
+          <button class="btn primary" id="btnRun">Run Seed</button>
+          <p class="muted" style="margin-top:1rem;font-size:13px;line-height:1.5" id="activeLabel">Checking engagement…</p>
+        </section>
+        <section class="panel domain-results">
+          <h2>Identity package</h2>
+          <div id="out" class="muted">Returns: type, anchor locus, suggested pivots, entity stub — then optionally maps.</div>
+        </section>
+      </div>
+      <section class="panel" id="history"></section>
+    </div>
+  </main>
+</div>
+<script src="/static/js/shell.js"></script>
+<script src="/static/js/gps.js"></script>
+<script src="/static/js/results.js"></script>
+<script src="/static/js/domain.js"></script>
+<script>ARIADomain.boot("seed", { nav: "seed" });</script>
+</body>
+</html>
