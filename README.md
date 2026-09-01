@@ -2,43 +2,41 @@
 
 **One command. One server. One dashboard.**
 
-## Capabilities
+## What you can do with ARIA
 
-| Area | What it does |
-|------|----------------|
-| **Root tab** | ESP32 kit live iframe (`192.168.4.1`), ping, pull devices, open in new tab |
-| **Stem · Radar** | RSSI range map, Root device merge, engagement pins, filters, laptop GPS → Root |
-| **Run · Seed** | Finch Seed Engine embedded — identity package (name, email, handle, photos, findings) |
-| **Run · OSINT** | Domain/DNS infra recon, per-host geo table |
-| **Run · Glass** | LAN IoT/camera port probe on authorized CIDRs |
-| **Run · Web3** | On-chain address / contract intel |
-| **Run · RF** | Pull Root Wi‑Fi device list into engagement |
-| **Engagements** | ROE jobs, declared locus, pins + findings audit trail, export / delete / clear |
-| **Geo honesty** | Identity seeds only map when package contains subject-correlated geo |
-| **GPS** | Browser geolocation + optional gpsd; operator locus separate from subject pins |
+ARIA is the **operator cockpit** for a field recon kit. One browser window runs your ESP32 sniffer, your radar view, your intel skills, and your case file — no juggling terminals or ports.
 
-**Dashboard**
-- Single URL (`http://127.0.0.1:8877`) — Root, Stem · Radar, Run, Engagements in one UI
-- Quick start / custom engagement, laptop GPS, GPS → engagement from top bar
+### See what's around you (Root + Stem · Radar)
 
-**Skills (Run tab)**
-- **Seed** — embedded Finch identity package (photos, sources, findings, pivots)
-- **OSINT** — DNS A/MX, host geo table, infra-focused domain report
-- **Glass** — authorized LAN IoT/camera surface port probe
-- **Web3** — chain address / contract intel stub
-- **RF** — Root kit device pull merged into engagement
+- **Join the kit Wi‑Fi** (`root` / `root-radar`) and watch the **live Root dashboard** inside ARIA — same view as `192.168.4.1`, no tab-hopping.
+- **Pull every device Root hears** — Wi‑Fi probes, beacons, MACs, SSIDs, vendors, RSSI — straight into the **Stem · Radar** map.
+- **See who's close vs far** on an RSSI range map; filter by band, freshness, or engagement pins.
+- **Push your laptop GPS to Root** so field captures carry operator location (when you choose to).
 
-**Engagement workflow**
-- Declared locus (operator GPS), pins, findings history per job
-- Export audit JSON, delete engagement, clear audit trail
-- Engagement cards open Run tab with active job selected
+### Run intel on a target (Run tab)
 
-**Integrations**
-- Finch Seed Engine embedded via Finch venv (no port 8765 by default)
-- Root ESP32 @ `192.168.4.1` — iframe + API pull into radar
-- Optional `FINCH_BASE` for legacy separate Finch HTTP server
+Type a seed and get a **full domain report on the same page**:
 
-## Start
+- **Seed** — drop a **name, email, or @handle** and get an identity package: photos, sources, findings, pivots. Powered by Finch Seed Engine, **embedded** — no second server.
+- **OSINT** — point at a **domain or IP** and get DNS, mail hosts, infra layout, and a per-host geo table.
+- **Glass** — scan an **authorized LAN** for open IoT/camera/drone ports and live surface probes.
+- **Web3** — look up a **wallet or contract** for on-chain context.
+- **RF** — pull Root's live device list into your active engagement as structured findings.
+
+### Run a proper engagement (Engagements)
+
+- **Quick-start a case** with ROE, title, and declared locus (your laptop GPS or custom).
+- **Every skill run appends to the audit trail** — pins, findings, timestamps — exportable as JSON for deliverables.
+- **Delete a job or wipe its audit** when the engagement ends.
+- **Switch cases** from the Engagements tab; open one and jump straight to Run.
+
+### Built-in honesty
+
+- Searching **"Damond Nixon"** does **not** pin that person to your laptop GPS. Pins appear only when the intelligence package actually contains **subject-correlated geo** — not operator location theater.
+
+```bash
+cd ~/Aria && ./start.sh   # one command → http://127.0.0.1:8877
+```
 
 **ARIA Kit (integrated — one server):**
 ```bash
