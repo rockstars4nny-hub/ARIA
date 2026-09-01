@@ -2,6 +2,21 @@
 
 **One command. One server. One dashboard.**
 
+## Capabilities
+
+| Area | What it does |
+|------|----------------|
+| **Root tab** | ESP32 kit live iframe (`192.168.4.1`), ping, pull devices, open in new tab |
+| **Stem · Radar** | RSSI range map, Root device merge, engagement pins, filters, laptop GPS → Root |
+| **Run · Seed** | Finch Seed Engine embedded — identity package (name, email, handle, photos, findings) |
+| **Run · OSINT** | Domain/DNS infra recon, per-host geo table |
+| **Run · Glass** | LAN IoT/camera port probe on authorized CIDRs |
+| **Run · Web3** | On-chain address / contract intel stub |
+| **Run · RF** | Pull Root Wi‑Fi device list into engagement |
+| **Engagements** | ROE jobs, declared locus, pins + findings audit trail, export / delete / clear |
+| **Geo honesty** | Identity seeds only map when package contains subject-correlated geo |
+| **GPS** | Browser geolocation + optional gpsd; operator locus separate from subject pins |
+
 ## Start
 
 **ARIA Kit (integrated — one server):**
