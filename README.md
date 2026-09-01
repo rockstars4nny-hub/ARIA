@@ -2,6 +2,29 @@
 
 **One command. One server. One dashboard.**
 
+## For potential customers
+
+ARIA is the **field operator cockpit** for authorized recon and intelligence work — one browser session, one audit trail, one exportable case file. Built for teams who need **real capability in the field**, not a pile of disconnected scripts.
+
+| If you need to… | ARIA delivers |
+|-----------------|---------------|
+| **See what's around the kit in real time** | Live ESP32 Root dashboard + RSSI radar map — Wi‑Fi probes, beacons, vendors, signal strength |
+| **Build an identity package fast** | Embedded Finch Seed — name, email, @handle → photos, sources, findings, pivots on the same page |
+| **Find public photos of a subject** | **FaceSearch AI** — search by name, @handle, or photo; graded matches; engagement audit |
+| **Map digital infrastructure** | OSINT domain/DNS recon with per-host geo — no tab-hopping |
+| **Probe authorized LAN surfaces** | Glass IoT/camera/drone port scan on declared CIDRs |
+| **Follow on-chain leads** | Web3 wallet / contract intel from the Run tab |
+| **Run a defensible engagement** | ROE-backed jobs, declared locus, timestamped findings, JSON export, delete / clear audit |
+| **Avoid misleading geo** | Geo-honest seeds — identity queries are **not** pinned to operator laptop GPS unless the package carries subject geo |
+
+**Typical buyers:** private investigators, corporate security & insider-threat teams, authorized red teams, boutique intel firms, and kit operators running Root + laptop in the field.
+
+**What you get on day one:** `./start.sh` → full dashboard at `:8877` — Root, Stem · Radar, Run skills, FaceSearch AI, Engagements. Finch Seed runs **embedded** (no second server).
+
+**Authorization:** ARIA is for **lawful, authorized use only** — consent, ROE, and jurisdiction are your responsibility. FaceSearch includes an explicit consent gate before any search runs.
+
+---
+
 ## What you can do with ARIA
 
 ARIA is the **operator cockpit** for a field recon kit. One browser window runs your ESP32 sniffer, your radar view, your intel skills, and your case file — no juggling terminals or ports.
@@ -23,6 +46,14 @@ Type a seed and get a **full domain report on the same page**:
 - **Web3** — look up a **wallet or contract** for on-chain context.
 - **RF** — pull Root's live device list into your active engagement as structured findings.
 
+### FaceSearch AI (dedicated tab)
+
+- Search by **subject name alone** (e.g. `Jane Smith`) — public photo discovery via DDG/Bing when reverse upload is unavailable.
+- Upload a **probe photo** **and** add a **name or @handle** for best results (`@user`, `instagram:handle`, `github:user`).
+- **Fetch profile photo** pulls public avatars from GitHub, X/Twitter, Instagram, Facebook, Reddit, LinkedIn.
+- Run **reverse face search** on Yandex + Bing Visual with local **high / med / low / weak** grading when a clear face is detected.
+- **Detect faces** locally before you search; results append to your active engagement audit.
+
 ### Run a proper engagement (Engagements)
 
 - **Quick-start a case** with ROE, title, and declared locus (your laptop GPS or custom).
@@ -32,7 +63,7 @@ Type a seed and get a **full domain report on the same page**:
 
 ### Built-in honesty
 
-- Searching **"Damond Nixon"** does **not** pin that person to your laptop GPS. Pins appear only when the intelligence package actually contains **subject-correlated geo** — not operator location theater.
+- Searching a **person name** does **not** pin that person to your laptop GPS. Pins appear only when the intelligence package actually contains **subject-correlated geo** — not operator location theater.
 
 ```bash
 cd ~/Aria && ./start.sh   # one command → http://127.0.0.1:8877
@@ -61,6 +92,7 @@ That's it for ARIA. Finch Seed Engine runs **embedded** inside ARIA — no secon
 | **Root** | ESP32 kit @ 192.168.4.1 (join `root` / `root-radar`) |
 | **Stem · Radar** | Signal map + Root pull |
 | **Run** | Seed · OSINT · Glass · Web3 · RF |
+| **FaceSearch AI** | Name / @handle / photo search · local face grading · engagement audit |
 | **Engagements** | Jobs, export, delete, clear audit |
 
 Top bar: Quick start · Laptop GPS · GPS → engagement · Custom

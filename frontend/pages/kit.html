@@ -21,6 +21,7 @@
       <button type="button" class="kit-tab active" data-kit-tab="root"><span class="ico">◈</span> Root</button>
       <button type="button" class="kit-tab" data-kit-tab="radar"><span class="ico">◉</span> Stem · Radar</button>
       <button type="button" class="kit-tab" data-kit-tab="run"><span class="ico">⚡</span> Run</button>
+      <button type="button" class="kit-tab" data-kit-tab="facesearch"><span class="ico">◐</span> FaceSearch AI</button>
       <button type="button" class="kit-tab" data-kit-tab="engagements"><span class="ico">▣</span> Engagements</button>
     </nav>
     <div class="kit-skill-nav" id="runSkillBar">
@@ -138,6 +139,83 @@
         </div>
       </section>
 
+      <!-- FACESEARCH -->
+      <section class="kit-panel" id="panel-facesearch">
+        <div class="stage-body">
+          <div class="domain-grid">
+            <section class="panel">
+              <h2>FaceSearch AI</h2>
+              <p class="muted" style="font-size:13px;line-height:1.55;margin-bottom:1rem">
+                Reverse face search when a clear face photo is available. Otherwise pulls <strong>public photos</strong> from name/handle search (DDG/Bing) and social profile URLs.
+                Local grading:
+                <span class="face-band high">high</span>
+                <span class="face-band medium">med</span>
+                <span class="face-band low">low</span>
+                <span class="face-band weak">weak</span>
+              </p>
+              <span class="kit-status pending" id="faceEngineStatus">checking…</span>
+              <div class="field" style="margin-top:1rem">
+                <label>Subject name</label>
+                <input id="faceName" type="text" placeholder="e.g. Jane Smith — works alone or with photo"/>
+              </div>
+              <div class="field">
+                <label>Social handle</label>
+                <input id="faceHandle" type="text" placeholder="@handle · instagram:user · github:user"/>
+                <p class="muted" style="font-size:11px;margin-top:.35rem">Or use platform dropdown + username below</p>
+              </div>
+              <div class="field" style="display:flex;gap:.5rem;flex-wrap:wrap">
+                <div style="flex:1;min-width:120px">
+                  <label>Platform</label>
+                  <select id="facePlatform">
+                    <option value="">Any (try all)</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="twitter">X / Twitter</option>
+                    <option value="github">GitHub</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="reddit">Reddit</option>
+                    <option value="linkedin">LinkedIn</option>
+                  </select>
+                </div>
+                <div style="flex:2;min-width:140px">
+                  <label>Username</label>
+                  <input id="faceUsername" type="text" placeholder="without @"/>
+                </div>
+              </div>
+              <div class="field">
+                <label>Probe photo (optional if handle set)</label>
+                <input id="facePhoto" type="file" accept="image/*"/>
+              </div>
+              <div id="facePreview" class="face-preview"></div>
+              <div id="faceAvatarSources" class="muted" style="font-size:11px;margin-top:.35rem"></div>
+              <div style="margin-top:.5rem">
+                <button class="btn" type="button" id="btnFacePreview">Fetch profile photo</button>
+              </div>
+              <div class="field" style="margin-top:.75rem">
+                <label>Extra aliases (optional)</label>
+                <input id="faceAliases" type="text" placeholder="nickname, other @handles"/>
+              </div>
+              <label class="face-consent">
+                <input type="checkbox" id="faceConsent"/>
+                <span id="faceConsentText">Loading consent text…</span>
+              </label>
+              <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:.5rem">
+                <button class="btn primary" id="btnFaceSearch" type="button">Reverse Face Search</button>
+                <button class="btn" id="btnFaceDetect" type="button">Detect faces (local)</button>
+              </div>
+              <div id="faceProgressWrap" class="face-progress-wrap" style="display:none;margin-top:1rem">
+                <div class="face-progress-bar"><div id="faceProgressBar"></div></div>
+                <div class="muted mono" id="faceProgressLabel" style="font-size:11px;margin-top:.35rem"></div>
+              </div>
+            </section>
+            <section class="panel domain-results">
+              <h2>Graded matches</h2>
+              <div id="faceResults" class="muted">Enter a subject name, @handle, or upload a photo (name/handle recommended with photos) — confirm consent, then run Reverse Face Search.</div>
+              <div id="faceMatchGrid" class="face-match-grid"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
       <!-- ENGAGEMENTS -->
       <section class="kit-panel" id="panel-engagements">
         <div class="kit-panel-actions">
@@ -161,6 +239,7 @@
 <script src="/static/js/radar.js"></script>
 <script src="/static/js/results.js"></script>
 <script src="/static/js/domain.js"></script>
+<script src="/static/js/facesearch.js"></script>
 <script src="/static/js/kit.js"></script>
 <script>
 ARIAKit.boot();

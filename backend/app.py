@@ -15,7 +15,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import collectors, store
-from .finch_bridge import finch_available, ping as finch_ping
+from .face_bridge import health as face_health
+from .face_router import router as face_router
+from .finch_bridge import ping as finch_ping
 from .geo import valid_map_coords
 from .gps import router as gps_router
 from .root_proxy import router as root_router
@@ -26,7 +28,7 @@ PAGES = FRONTEND_DIR / "pages"
 app = FastAPI(
     title="ARIA",
     description="Advanced Recon Intelligence Agent",
-    version="0.4.0",
+    version="0.5.0",
 )
 app.add_middleware(
     CORSMiddleware,
@@ -36,6 +38,7 @@ app.add_middleware(
 )
 app.include_router(root_router)
 app.include_router(gps_router)
+app.include_router(face_router)
 
 
 class Locus(BaseModel):
@@ -68,14 +71,16 @@ def _page(name: str) -> FileResponse:
 @app.get("/api/health")
 async def health() -> dict[str, Any]:
     finch = await finch_ping()
+    face = await face_health()
     return {
         "ok": True,
         "product": "ARIA",
         "full_name": "Advanced Recon Intelligence Agent",
-        "version": "0.4.0",
+        "version": "0.5.0",
         "map": "maplibre+openfreemap",
         "gps": "browser+gpsd",
         "finch_seed": finch,
+        "facesearch": face,
         "url": "http://127.0.0.1:8877",
         "not": "Finch",
     }

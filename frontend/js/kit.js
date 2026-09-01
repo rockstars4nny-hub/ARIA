@@ -1,6 +1,6 @@
 /* ARIA Kit — one dashboard, click-through tabs, full tool parity */
 window.ARIAKit = (function () {
-  const TABS = ["root", "radar", "run", "engagements"];
+  const TABS = ["root", "radar", "run", "facesearch", "engagements"];
   const SKILLS = ["seed", "osint", "glass", "web3", "rf"];
   const SKILL_META = {
     seed: {
@@ -49,6 +49,7 @@ window.ARIAKit = (function () {
 
     if (tab === "radar") ensureRadar();
     if (tab === "run") ensureRun();
+    if (tab === "facesearch" && window.ARIAFaceSearch) ARIAFaceSearch.mount();
     if (tab === "engagements") loadEngagements();
     if (tab === "root") pingRoot();
 
@@ -60,6 +61,7 @@ window.ARIAKit = (function () {
       root: ["Root", "ESP32 kit dashboard — live sniff on 192.168.4.1"],
       radar: ["Stem · Radar", "Merged field view — pull Root, laptop GPS inject, engagement pins"],
       run: [SKILL_META[activeSkill].title, "Domain report on this page"],
+      facesearch: ["FaceSearch AI", "Reverse face search — Yandex + Bing Visual, graded local confidence"],
       engagements: ["Engagements", "All jobs — click a card to set active and run skills"],
     };
     const t = titles[tab] || titles.root;
