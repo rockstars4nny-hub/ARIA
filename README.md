@@ -11,11 +11,32 @@
 | **Run · Seed** | Finch Seed Engine embedded — identity package (name, email, handle, photos, findings) |
 | **Run · OSINT** | Domain/DNS infra recon, per-host geo table |
 | **Run · Glass** | LAN IoT/camera port probe on authorized CIDRs |
-| **Run · Web3** | On-chain address / contract intel stub |
+| **Run · Web3** | On-chain address / contract intel |
 | **Run · RF** | Pull Root Wi‑Fi device list into engagement |
 | **Engagements** | ROE jobs, declared locus, pins + findings audit trail, export / delete / clear |
 | **Geo honesty** | Identity seeds only map when package contains subject-correlated geo |
 | **GPS** | Browser geolocation + optional gpsd; operator locus separate from subject pins |
+
+**Dashboard**
+- Single URL (`http://127.0.0.1:8877`) — Root, Stem · Radar, Run, Engagements in one UI
+- Quick start / custom engagement, laptop GPS, GPS → engagement from top bar
+
+**Skills (Run tab)**
+- **Seed** — embedded Finch identity package (photos, sources, findings, pivots)
+- **OSINT** — DNS A/MX, host geo table, infra-focused domain report
+- **Glass** — authorized LAN IoT/camera surface port probe
+- **Web3** — chain address / contract intel stub
+- **RF** — Root kit device pull merged into engagement
+
+**Engagement workflow**
+- Declared locus (operator GPS), pins, findings history per job
+- Export audit JSON, delete engagement, clear audit trail
+- Engagement cards open Run tab with active job selected
+
+**Integrations**
+- Finch Seed Engine embedded via Finch venv (no port 8765 by default)
+- Root ESP32 @ `192.168.4.1` — iframe + API pull into radar
+- Optional `FINCH_BASE` for legacy separate Finch HTTP server
 
 ## Start
 
