@@ -19,6 +19,7 @@
     <div class="kit-stats" id="kitStats"></div>
     <nav class="kit-tab-nav">
       <button type="button" class="kit-tab active" data-kit-tab="root"><span class="ico">◈</span> Root</button>
+      <button type="button" class="kit-tab" data-kit-tab="omni"><span class="ico">⬡</span> Omni</button>
       <button type="button" class="kit-tab" data-kit-tab="radar"><span class="ico">◉</span> Stem · Radar</button>
       <button type="button" class="kit-tab" data-kit-tab="run"><span class="ico">⚡</span> Run</button>
       <button type="button" class="kit-tab" data-kit-tab="facesearch"><span class="ico">◐</span> FaceSearch AI</button>
@@ -68,6 +69,41 @@
           <div class="kit-root-fallback muted">
             <p><strong>Can't see Root?</strong> Join Wi‑Fi <span class="mono">root</span> / <span class="mono">root-radar</span>, then Reload frame or Open tab.</p>
             <p>Windows may show “no internet” — open <span class="mono">http://192.168.4.1</span> directly.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- OMNI — OmniScan command interface -->
+      <section class="kit-panel" id="panel-omni">
+        <div class="kit-root-bar">
+          <span class="kit-status pending" id="omniStatus">checking…</span>
+          <div class="field" style="margin:0;flex:1;max-width:280px">
+            <input id="omniBase" value="http://192.168.4.1"/>
+          </div>
+          <button class="btn" id="btnOmniPing">Ping</button>
+          <button class="btn primary" id="omniQuickStart">./omni start</button>
+          <button class="btn" id="omniQuickStatus">status</button>
+          <button class="btn" id="omniQuickRaw">subghz raw</button>
+          <button class="btn" id="omniQuickHelp">help</button>
+        </div>
+        <div class="omni-layout">
+          <aside class="omni-side">
+            <h2 class="omni-side-title">Tool capabilities</h2>
+            <p class="muted" style="font-size:12px;line-height:1.45;margin-bottom:.75rem">
+              root Agent OmniScan — Serial, SoftAP HTTP <span class="mono">/api/omni</span>, and this console.
+              Tap a capability to run it.
+            </p>
+            <div id="omniCaps" class="omni-caps"></div>
+          </aside>
+          <div class="omni-main">
+            <div class="omni-term" id="omniTerm" aria-live="polite"></div>
+            <div class="omni-input-row">
+              <span class="omni-prompt">$</span>
+              <input id="omniCmd" class="omni-cmd" type="text" spellcheck="false"
+                     placeholder="./omni status" autocomplete="off"/>
+              <button class="btn primary" id="omniRun" type="button">Run</button>
+              <button class="btn" id="omniClear" type="button">Clear</button>
+            </div>
           </div>
         </div>
       </section>
@@ -240,6 +276,7 @@
 <script src="/static/js/results.js"></script>
 <script src="/static/js/domain.js"></script>
 <script src="/static/js/facesearch.js"></script>
+<script src="/static/js/omni.js"></script>
 <script src="/static/js/kit.js"></script>
 <script>
 ARIAKit.boot();

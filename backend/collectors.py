@@ -716,13 +716,30 @@ async def run_rf(query: str, engagement: dict[str, Any]) -> dict[str, Any]:
         devices = []
 
     scanner_gps = data.get("scanner_gps") if isinstance(data, dict) else None
+    bands = sorted(
+        {
+            str(d.get("band") or d.get("type") or "?")
+            for d in devices
+            if isinstance(d, dict)
+        }
+    )
+    wifi_lr = bool(data.get("wifi_lr")) if isinstance(data, dict) else False
+    ble_on = bool(data.get("ble")) if isinstance(data, dict) else ("ble" in bands)
+    ble_n = sum(
+        1
+        for d in devices
+        if isinstance(d, dict) and str(d.get("band") or "").lower() == "ble"
+    )
     report.update(
         {
             "status": "ok",
             "devices": devices[:100],
             "count": len(devices),
             "scanner_gps": scanner_gps,
-            "bands": sorted({d.get("band") or d.get("type") or "?" for d in devices if isinstance(d, dict)}),
+            "bands": bands,
+            "wifi_lr": wifi_lr,
+            "ble": ble_on,
+            "ble_count": ble_n,
         }
     )
 
@@ -750,9 +767,16 @@ async def run_rf(query: str, engagement: dict[str, Any]) -> dict[str, Any]:
                 }
             )
 
+    band_note = ", ".join(bands) if bands else "unknown"
+    extras = []
+    if wifi_lr:
+        extras.append("wifi_lr")
+    if ble_on:
+        extras.append(f"ble×{ble_n}")
+    extra_s = f" [{', '.join(extras)}]" if extras else ""
     findings.append(
         {
-            "summary": f"RF: {len(devices)} device(s) from Root @ {base}",
+            "summary": f"RF: {len(devices)} device(s) from Root @ {base} · bands={band_note}{extra_s}",
             "claim_level": "observed",
             "source": "rf",
         }

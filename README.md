@@ -32,6 +32,8 @@ ARIA is the **operator cockpit** for a field recon kit. One browser window runs 
 ### See what's around you (Root + Stem · Radar)
 
 - **Join the kit Wi‑Fi** (`root` / `root-radar`) and watch the **live Root dashboard** inside ARIA — same view as `192.168.4.1`, no tab-hopping.
+- **Omni tab** — OmniScan `./omni` console (Wi‑Fi, onboard BLE, Wi‑Fi LR/ESP-NOW, Sub‑GHz raw, LoRa, GPS, AP, system).
+- **Stem · Radar** merges Root devices with engagement pins and laptop GPS.
 - **Pull every device Root hears** — Wi‑Fi probes, beacons, MACs, SSIDs, vendors, RSSI — straight into the **Stem · Radar** map.
 - **See who's close vs far** on an RSSI range map; filter by band, freshness, or engagement pins.
 - **Push your laptop GPS to Root** so field captures carry operator location (when you choose to).

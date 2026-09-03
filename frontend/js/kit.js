@@ -1,6 +1,6 @@
 /* ARIA Kit — one dashboard, click-through tabs, full tool parity */
 window.ARIAKit = (function () {
-  const TABS = ["root", "radar", "run", "facesearch", "engagements"];
+  const TABS = ["root", "omni", "radar", "run", "facesearch", "engagements"];
   const SKILLS = ["seed", "osint", "glass", "web3", "rf"];
   const SKILL_META = {
     seed: {
@@ -52,13 +52,15 @@ window.ARIAKit = (function () {
     if (tab === "facesearch" && window.ARIAFaceSearch) ARIAFaceSearch.mount();
     if (tab === "engagements") loadEngagements();
     if (tab === "root") pingRoot();
+    if (tab === "omni" && window.ARIAOmni) ARIAOmni.mount();
 
-    document.body.dataset.gpsRoot = tab === "radar" || tab === "root" ? "" : undefined;
+    document.body.dataset.gpsRoot = tab === "radar" || tab === "root" || tab === "omni" ? "" : undefined;
   }
 
   function updateHead(tab) {
     const titles = {
       root: ["Root", "ESP32 kit dashboard — live sniff on 192.168.4.1"],
+      omni: ["OmniScan", "root Agent ./omni command interface — Wi‑Fi · BLE · Sub‑GHz · LoRa · GPS"],
       radar: ["Stem · Radar", "Merged field view — pull Root, laptop GPS inject, engagement pins"],
       run: [SKILL_META[activeSkill].title, "Domain report on this page"],
       facesearch: ["FaceSearch AI", "Reverse face search — Yandex + Bing Visual, graded local confidence"],
