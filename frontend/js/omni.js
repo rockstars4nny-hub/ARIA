@@ -53,6 +53,8 @@ window.ARIAOmni = (function () {
       items: [
         { cmd: "./omni gps status", label: "gps", desc: "Fix status" },
         { cmd: "./omni ap status", label: "ap", desc: "SoftAP status" },
+        { cmd: "./omni ap start", label: "ap start", desc: "Bring SoftAP up if down" },
+        { cmd: "./omni ap restart", label: "ap restart", desc: "Force SoftAP re-beacon" },
         { cmd: "./omni log status", label: "log", desc: "Session logging" },
         { cmd: "./omni system info", label: "info", desc: "ESP32-S3 info" },
         { cmd: "./omni system help", label: "help", desc: "All commands" },
@@ -61,6 +63,9 @@ window.ARIAOmni = (function () {
   ];
 
   let mounted = false;
+  /** @type {{ ts: string, cls: string, text: string }[]} */
+  let transcript = [];
+  let savedCount = 0; // lines already flushed to engagement (append mode)
 
   function $(id) {
     return document.getElementById(id);
@@ -71,6 +76,10 @@ window.ARIAOmni = (function () {
     return (el && el.value.trim()) || "http://192.168.4.1";
   }
 
+  function isoNow() {
+    return new Date().toISOString();
+  }
+
   function appendTerm(text, cls) {
     const term = $("omniTerm");
     if (!term) return;
@@ -79,6 +88,100 @@ window.ARIAOmni = (function () {
     line.textContent = text;
     term.appendChild(line);
     term.scrollTop = term.scrollHeight;
+    transcript.push({
+      ts: isoNow(),
+      cls: cls || "omni-out",
+      text: String(text ?? ""),
+    });
+  }
+
+  function getTranscript() {
+    return transcript.slice();
+  }
+
+  function transcriptText() {
+    return transcript.map((e) => e.text).join("\n");
+  }
+
+  function downloadBlob(filename, blob) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  function exportLocal() {
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    const eid = (typeof ARIA !== "undefined" && ARIA.getActiveId && ARIA.getActiveId()) || "none";
+    const pack = {
+      product: "ARIA OmniScan",
+      export_type: "omni_console",
+      exported_at: isoNow(),
+      engagement_id: eid,
+      line_count: transcript.length,
+      omni_log: transcript.slice(),
+      omni_output: transcriptText(),
+    };
+    downloadBlob(
+      "ARIA_omni_" + stamp + ".json",
+      new Blob([JSON.stringify(pack, null, 2)], { type: "application/json" })
+    );
+    downloadBlob(
+      "ARIA_omni_" + stamp + ".txt",
+      new Blob([pack.omni_output || "(empty)"], { type: "text/plain" })
+    );
+    ARIA.toast("Omni output exported (" + transcript.length + " lines)");
+    return pack;
+  }
+
+  /**
+   * Push transcript into the active engagement so Export JSON includes it.
+   * @param {string} [eid]
+   * @param {{ replace?: boolean, onlyNew?: boolean }} [opts]
+   */
+  async function flushToEngagement(eid, opts) {
+    opts = opts || {};
+    const id =
+      eid ||
+      (typeof ARIA !== "undefined" && ARIA.getActiveId && ARIA.getActiveId());
+    if (!id) {
+      ARIA.toast("No active engagement — set one on Engagements tab", true);
+      return null;
+    }
+    let entries = transcript;
+    if (opts.onlyNew && savedCount > 0) {
+      entries = transcript.slice(savedCount);
+    }
+    if (!entries.length && !opts.replace) {
+      return { ok: true, omni_line_count: 0, skipped: true };
+    }
+    const r = await ARIA.api("/api/engagements/" + id + "/omni", {
+      method: "POST",
+      body: JSON.stringify({
+        entries,
+        replace: !!opts.replace,
+      }),
+    });
+    if (!opts.replace) savedCount = transcript.length;
+    else savedCount = transcript.length;
+    return r;
+  }
+
+  async function saveToEngagement() {
+    try {
+      const r = await flushToEngagement(undefined, { onlyNew: true });
+      if (!r) return;
+      if (r.skipped) {
+        ARIA.toast("Nothing new to save");
+        return;
+      }
+      ARIA.toast(
+        "Omni saved to engagement (" + (r.omni_line_count ?? "?") + " total lines)"
+      );
+    } catch (e) {
+      ARIA.toast(String(e.message || e), true);
+    }
   }
 
   function renderCaps() {
@@ -123,54 +226,55 @@ window.ARIAOmni = (function () {
       status.className = "kit-status pending";
     }
     try {
-      // Prefer structured JSON for raw dumps — Omni text path was blanking on oversized HEX
-      const isRaw =
+      // Prefer structured JSON when ARIA has /api/root/subghz/raw; else ./omni via proxy.
+      const isRawList =
         /^(\.\/)?omni\s+subghz\s+raw\s*$/i.test(cmd) ||
         /^(\.\/)?omni\s+subghz\s+raw\s+\d+\s*$/i.test(cmd);
-      if (isRaw) {
-        const nMatch = cmd.match(/\bra\w*\s+(\d+)\s*$/i);
+      if (isRawList) {
+        const nMatch = cmd.match(/\braw\s+(\d+)\s*$/i);
         const n = nMatch ? Math.min(50, Math.max(1, parseInt(nMatch[1], 10))) : 20;
-        const j = await ARIA.api(
-          "/api/root/subghz/raw?n=" + n + "&base=" + encodeURIComponent(baseUrl())
-        );
-        let text = "";
-        if (j && j.ok === false && j.error) {
-          text = "ERROR: " + j.error;
-        } else if (j && Array.isArray(j.packets)) {
-          text =
-            "=== SUB-GHZ RAW (JSON) ===\nTotal: " +
-            (j.total ?? 0) +
-            " · shown: " +
-            (j.count ?? j.packets.length) +
-            "\n\n";
-          if (!j.packets.length) {
-            text +=
-              "(no raw captures yet)\nPress a 315/433/868 remote near the board, then retry.\n";
-          } else {
-            j.packets.forEach((pk, i) => {
+        try {
+          const j = await ARIA.api(
+            "/api/root/subghz/raw?n=" + n + "&base=" + encodeURIComponent(baseUrl())
+          );
+          let text = "";
+          if (j && Array.isArray(j.packets)) {
+            text =
+              "=== SUB-GHZ RAW ===\nTotal: " +
+              (j.total ?? 0) +
+              " · shown: " +
+              (j.count ?? j.packets.length) +
+              "\n\n";
+            if (!j.packets.length) {
               text +=
-                "[" +
-                (i + 1) +
-                "] " +
-                (pk.mhz ?? "?") +
-                " MHz " +
-                (pk.rssi ?? "?") +
-                " dBm " +
-                (pk.len ?? 0) +
-                "B\nHEX: " +
-                (pk.hex || "(empty)") +
-                "\n\n";
-            });
+                "(no raw captures yet)\nPress a 315/433/868/915 remote near the board, then retry.\n";
+            } else {
+              j.packets.forEach((pk, i) => {
+                text +=
+                  "[" +
+                  (i + 1) +
+                  "] " +
+                  (pk.mhz ?? "?") +
+                  " MHz " +
+                  (pk.rssi ?? "?") +
+                  " dBm " +
+                  (pk.len ?? 0) +
+                  "B\nHEX: " +
+                  (pk.hex || "(empty)") +
+                  "\n\n";
+              });
+            }
+            appendTerm(text, "omni-out");
+            if (status) {
+              status.textContent = "OK";
+              status.className = "kit-status ok";
+            }
+            return;
           }
-        } else {
-          text = JSON.stringify(j, null, 2);
+        } catch (e1) {
+          // Old ARIA process without /subghz/raw → fall through to ./omni
+          appendTerm("(JSON raw endpoint missing — using ./omni proxy)\n", "omni-meta");
         }
-        appendTerm(text, "omni-out");
-        if (status) {
-          status.textContent = "OK";
-          status.className = "kit-status ok";
-        }
-        return;
       }
 
       const r = await ARIA.api("/api/root/omni", {
@@ -190,7 +294,7 @@ window.ARIAOmni = (function () {
         status.textContent = "unreachable";
         status.className = "kit-status err";
       }
-      ARIA.toast("Root OmniScan unreachable — join root Wi‑Fi", true);
+      ARIA.toast("Root OmniScan unreachable — join SoftAP root / root-radar", true);
     }
   }
 
@@ -211,7 +315,13 @@ window.ARIAOmni = (function () {
     $("omniClear").onclick = () => {
       const term = $("omniTerm");
       if (term) term.innerHTML = "";
+      transcript = [];
+      savedCount = 0;
     };
+    const expBtn = $("omniExport");
+    if (expBtn) expBtn.onclick = () => exportLocal();
+    const saveBtn = $("omniSaveEng");
+    if (saveBtn) saveBtn.onclick = () => saveToEngagement();
     $("btnOmniPing").onclick = ping;
     $("omniQuickStart").onclick = () => runCmd("./omni start");
     $("omniQuickStatus").onclick = () => runCmd("./omni status");
@@ -237,5 +347,13 @@ window.ARIAOmni = (function () {
     }
   }
 
-  return { mount, runCmd, ping };
+  return {
+    mount,
+    runCmd,
+    ping,
+    getTranscript,
+    exportLocal,
+    flushToEngagement,
+    saveToEngagement,
+  };
 })();

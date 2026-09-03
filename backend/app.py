@@ -150,6 +150,24 @@ def export_engagement(eid: str) -> dict[str, Any]:
     return pack
 
 
+class OmniLogBody(BaseModel):
+    entries: list[dict[str, Any]] = []
+    replace: bool = False
+
+
+@app.post("/api/engagements/{eid}/omni")
+def post_engagement_omni(eid: str, body: OmniLogBody) -> dict[str, Any]:
+    """Append OmniScan console transcript to the engagement (included in Export JSON)."""
+    eng = store.append_omni_log(eid, body.entries or [], replace=bool(body.replace))
+    if not eng:
+        raise HTTPException(404, "engagement not found")
+    return {
+        "ok": True,
+        "omni_line_count": len(eng.get("omni_log") or []),
+        "engagement": eng,
+    }
+
+
 @app.delete("/api/engagements/{eid}")
 def delete_engagement(eid: str) -> dict[str, Any]:
     if not store.delete_engagement(eid):

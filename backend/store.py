@@ -65,6 +65,7 @@ def create_engagement(
             }
         ],
         "findings": [],
+        "omni_log": [],
         "created_at": _now(),
         "updated_at": _now(),
     }
@@ -140,20 +141,69 @@ def add_finding(eid: str, finding: dict[str, Any]) -> dict[str, Any] | None:
     return save_engagement(eng)
 
 
+def append_omni_log(
+    eid: str,
+    entries: list[dict[str, Any]],
+    *,
+    replace: bool = False,
+) -> dict[str, Any] | None:
+    """Append (or replace) OmniScan console lines on the engagement."""
+    eng = get_engagement(eid)
+    if not eng:
+        return None
+    if "omni_log" not in eng or not isinstance(eng.get("omni_log"), list):
+        eng["omni_log"] = []
+    cleaned: list[dict[str, Any]] = []
+    for e in entries or []:
+        if not isinstance(e, dict):
+            continue
+        text = str(e.get("text") or e.get("line") or "").rstrip("\n")
+        if not text and e.get("cls") != "omni-meta":
+            continue
+        cleaned.append(
+            {
+                "ts": e.get("ts") or _now(),
+                "cls": e.get("cls") or "omni-out",
+                "text": text,
+            }
+        )
+    if replace:
+        eng["omni_log"] = cleaned
+    else:
+        eng["omni_log"].extend(cleaned)
+        # Cap growth — keep last 2000 lines
+        if len(eng["omni_log"]) > 2000:
+            eng["omni_log"] = eng["omni_log"][-2000:]
+    eng["actions"].append(
+        {
+            "ts": _now(),
+            "kind": "omni_log",
+            "detail": f"{'replaced' if replace else 'appended'} {len(cleaned)} Omni line(s) "
+            f"(total {len(eng['omni_log'])})",
+        }
+    )
+    return save_engagement(eng)
+
+
 def export_audit(eid: str) -> dict[str, Any] | None:
     eng = get_engagement(eid)
     if not eng:
         return None
+    omni = eng.get("omni_log") or []
+    omni_text = "\n".join(str(x.get("text") or "") for x in omni if isinstance(x, dict))
     return {
         "product": "ARIA — Advanced Recon Intelligence Agent",
         "export_type": "engagement_audit",
         "exported_at": _now(),
         "engagement": eng,
+        "omni_log": omni,
+        "omni_output": omni_text,
         "proof": {
             "declared_locus": eng.get("declared_locus"),
             "observed_loci": eng.get("observed_loci"),
             "pin_count": len(eng.get("pins") or []),
             "action_count": len(eng.get("actions") or []),
+            "omni_line_count": len(omni),
         },
     }
 
@@ -174,11 +224,12 @@ def clear_audit(eid: str) -> dict[str, Any] | None:
     eng["pins"] = []
     eng["findings"] = []
     eng["observed_loci"] = []
+    eng["omni_log"] = []
     eng["actions"] = [
         {
             "ts": _now(),
             "kind": "audit_cleared",
-            "detail": "Pins, findings, and action log cleared",
+            "detail": "Pins, findings, Omni log, and action log cleared",
         }
     ]
     return save_engagement(eng)

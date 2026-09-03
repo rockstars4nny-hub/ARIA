@@ -274,6 +274,17 @@ window.ARIAKit = (function () {
       };
       card.querySelector("[data-eng-export]").onclick = async (ev) => {
         ev.stopPropagation();
+        try {
+          if (
+            window.ARIAOmni &&
+            typeof ARIAOmni.flushToEngagement === "function" &&
+            ARIA.getActiveId() === id
+          ) {
+            await ARIAOmni.flushToEngagement(id, { onlyNew: true });
+          }
+        } catch (_) {
+          /* still export engagement even if Omni flush fails */
+        }
         const pack = await ARIA.api("/api/engagements/" + id + "/export");
         const a = document.createElement("a");
         a.href = URL.createObjectURL(
@@ -281,7 +292,8 @@ window.ARIAKit = (function () {
         );
         a.download = "ARIA_audit_" + id + ".json";
         a.click();
-        ARIA.toast("Audit exported");
+        const n = (pack.omni_log && pack.omni_log.length) || 0;
+        ARIA.toast("Audit exported" + (n ? " · " + n + " Omni lines" : ""));
       };
       card.querySelector("[data-eng-clear]").onclick = async (ev) => {
         ev.stopPropagation();
